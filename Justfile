@@ -17,7 +17,14 @@ DLL_COMPILE_FLAGS := "-shared -fPIC"
 
 build-dll:
     @echo "Compilando as bibliotecas..."
-    @{{CXX}} {{DLL_COMPILE_FLAGS}} {{SRC_DIR}}/{{LIB_DIR}}/*.cpp -o {{LIB_DIR}}/libteste{{DLL_EXT}} {{CXX_COMPILE_FLAGS}}
+    @for pasta in {{SRC_DIR}}/*/; do \
+    if [ -d "$pasta" ]; then \
+    nome=$(basename "$pasta"); \
+    echo -n "${nome}... "; \
+    {{CXX}} {{DLL_COMPILE_FLAGS}} $pasta/*.cpp -o {{LIB_DIR}}/lib${nome}{{DLL_EXT}} {{CXX_COMPILE_FLAGS}}; \
+    echo "Sucesso"; \
+    fi; \
+    done
     @echo "Compiladas com sucesso"
 
 [default]
@@ -28,7 +35,7 @@ check:
     @echo "Checagem sem erros"
 
 build: init-build
-    @{{CXX}} {{SRC_DIR}}/*.cpp -o {{BIN_DIR}}/{{APP_NAME}} {{CXX_COMPILE_FLAGS}} -L{{LIB_DIR}} -lteste
+    @{{CXX}} {{SRC_DIR}}/*.cpp {{LIB_DIR}}/*{{DLL_EXT}} -o {{BIN_DIR}}/{{APP_NAME}} {{CXX_COMPILE_FLAGS}} -L{{LIB_DIR}}
 
 run:
     @LD_LIBRARY_PATH={{BIN_DIR}} ./{{BIN_DIR}}/{{APP_NAME}} 
@@ -36,7 +43,7 @@ run:
 br: build run
 
 cp lib:
-    @cp lib/lib{{lib}}{{DLL_EXT}} {{BIN_DIR}}
+    @cp {{LIB_DIR}}/lib{{lib}}{{DLL_EXT}} {{BIN_DIR}}
     @echo "lib{{lib}}{{DLL_EXT}} copiado com sucesso"
 
 clean:
